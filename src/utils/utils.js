@@ -1,4 +1,5 @@
 const os = require("os");
+const crypto = require('crypto');
 
 /**
  * Returns the local IP address of the machine.
@@ -25,7 +26,13 @@ function getStaticFilePath(path) {
     return path.replace(/\\/g, "/");
 }
 
+function generateOtp() {
+    const OTP = crypto.randomInt(100000,999999);
+    return OTP.toString();
+}
+
 module.exports = {
     getLocalIP,
-    getStaticFilePath
+    getStaticFilePath,
+    generateOtp,
 };

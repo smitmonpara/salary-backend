@@ -1,14 +1,25 @@
-// Define constants for platform types
-const IOS_PLATFORM = "iOS";
-const ANDROID_PLATFORM = "Android";
+const USER_LOGIN_TYPE = {
+    EMAIL: "Email",
+    GOOGLE: "Google",
+    APPLE: "Apple",
+}
 
-// Define constants for different login methods
-const GOOGLE_LOGIN = "google";
-const FACEBOOK_LOGIN = "facebook";
-const EMAIL_LOGIN = "email";
-const APPLE_LOGIN = "apple";
+const USER_ROLE = {
+    USER: "User",
+    ADMIN: "Admin",
+}
 
-const ADMIN_ROLE = "admin";
-const USER_ROLE = "user";
+const OTP_TYPE = {
+    VERIFY_EMAIL: "Verify Email",
+    FORGOT_PASSWORD: "Forgot Password",
+}
 
-module.exports = { IOS_PLATFORM, ANDROID_PLATFORM, GOOGLE_LOGIN, FACEBOOK_LOGIN, EMAIL_LOGIN, APPLE_LOGIN, ADMIN_ROLE, USER_ROLE };
+const EMAIL_TEMPLATE_PATH = {
+    SEND_OTP: "./views/send-otp.ejs",
+}
+module.exports = {
+    USER_LOGIN_TYPE,
+    USER_ROLE,
+    OTP_TYPE,
+    EMAIL_TEMPLATE_PATH,
+};

@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
-const { PORT } = require("./config/config");
+const { CONFIG } = require("./config/config");
 const { databaseConnect } = require("./database");
 const { getLocalIP } = require("./utils/utils");
 const router = require("./router");
@@ -21,8 +21,8 @@ app.use(errorMiddleware);
 
 databaseConnect().then((status) => {
     if (!status) return;
-    app.listen(PORT, () => {
-        console.log(`Server start on PORT ${PORT} 🚀🚀`);
-        console.log(`Server Link: http://${getLocalIP()}:${PORT}/`);
+    app.listen(CONFIG.PORT, () => {
+        console.log(`Server start on PORT ${CONFIG.PORT} 🚀🚀`);
+        console.log(`Server Link: http://${getLocalIP()}:${CONFIG.PORT}/`);
     });
 })

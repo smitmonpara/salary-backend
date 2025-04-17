@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../config/config");
+const { CONFIG } = require("../config/config");
 
 /**
  * Generates a JSON Web Token (JWT) for the given user ID.
@@ -9,7 +9,7 @@ const { JWT_SECRET } = require("../config/config");
  */
 function generateToken(data) {
     try {
-        const token = jwt.sign(data, JWT_SECRET);
+        const token = jwt.sign(data, CONFIG.JWT_SECRET);
         return token;
     } catch (e) {
         return null;
@@ -24,7 +24,7 @@ function generateToken(data) {
  */
 function verifyToken(token) {
     try {
-        const data = jwt.verify(token, JWT_SECRET);
+        const data = jwt.verify(token, CONFIG.JWT_SECRET);
         return data;
     } catch (e) {
         return null;

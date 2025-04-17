@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { DB_CONNECT } = require("../config/config");
+const { CONFIG } = require("../config/config");
 
 /**
  * Establishes a connection to the database using the connection string
@@ -10,7 +10,7 @@ const { DB_CONNECT } = require("../config/config");
  */
 async function databaseConnect() {
     try {
-        await mongoose.connect(DB_CONNECT);
+        await mongoose.connect(CONFIG.DB_CONNECT);
         console.log("Database connect successfully 😂😂");
         return true;
     } catch (error) {

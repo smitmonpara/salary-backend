@@ -11,7 +11,7 @@ const { asyncHandler } = require("../utils/async_handler");
 const bodyValidation = (data) => {
     return asyncHandler((req, _res, next) => {
         const regex = new RegExp('\"', 'g');
-        const { error } = data.validate(req.body);
+        const { error } = data.validate(req.body ?? {});
         if (error) {
             throw new ApiError(400, error.details[0].message.replace(regex, ''));
         }
