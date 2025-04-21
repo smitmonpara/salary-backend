@@ -31,8 +31,24 @@ const registerValidation = Joi.object({
     })
 });
 
+const loginValidation = Joi.object({
+    email: Joi.string().required().email().messages({
+        "string.empty": "Email is required",
+        "string.email": "Please provide a valid email address",
+        "any.required": "Email is required",
+    }),
+    password: Joi.string().required().messages({
+        "string.empty": "Password is required",
+        "any.required": "Password is required",
+    }),
+    fcmToken: Joi.string().optional().messages({
+        "string.empty": "FCM token is required",
+    }),
+});
+
 module.exports = {
     sendEmailOtpValidation,
     registerValidation,
+    loginValidation,
 };
 

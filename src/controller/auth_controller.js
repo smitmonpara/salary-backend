@@ -9,6 +9,7 @@ const { OtpModel } = require('../model/otp_model');
 const { generateToken, verifyToken } = require('../utils/generate_token');
 const { SuccessResponse } = require('../utils/response');
 const ejs = require('ejs');
+const { comparePassword } = require('../utils/hash');
 
 const sendEmailOtp = asyncHandler(async (req, res) => {
     const { email } = req.body;
@@ -47,8 +48,8 @@ const sendEmailOtp = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Email not sent, please try again later');
     }
 
-    setTimeout(() => {
-        OtpModel.findByIdAndDelete(otpModel._id);
+    setTimeout(async () => {
+        await OtpModel.findByIdAndDelete(otpModel._id);
     }, 5 * 60 * 1000);
 
     res.status(200).json(new SuccessResponse({
@@ -74,14 +75,14 @@ const register = asyncHandler(async (req, res) => {
     token = token[1];
     const data = verifyToken(token);
     if (!data) {
-        throw new ApiError(400, 'Token is invalid or expired');
+        throw new ApiError(400, 'OTP is invalid or expired');
     }
     const { email, id } = data;
 
     const findOtp = await OtpModel.findById(id);
 
     if (!findOtp || findOtp.email !== email || new Date() > findOtp.expiredAt || findOtp.type !== OTP_TYPE.VERIFY_EMAIL) {
-        throw new ApiError(400, 'Token is invalid or expired');
+        throw new ApiError(400, 'OTP is invalid or expired');
     }
 
     if (findOtp.otp !== otp) {
@@ -129,7 +130,46 @@ const register = asyncHandler(async (req, res) => {
 
 });
 
+const login = asyncHandler(async (req, res) => {
+    const { email, password, fcmToken } = req.body;
+    const findUser = await UserModel.findOne({ email });
+    if (!findUser) {
+        throw new ApiError(400, 'Email or password is incorrect');
+    }
+    const isPasswordMatch = comparePassword(password, findUser.password)
+    if (!isPasswordMatch) {
+        throw new ApiError(400, 'Email or password is incorrect');
+    }
+    const token = generateToken({
+        id: findUser._id,
+    });
+
+    if (!token) {
+        throw new ApiError(400, 'Token not generated, please try again later');
+    }
+
+    const user = await UserModel.findByIdAndUpdate(findUser._id, {
+        fcmToken,
+    }, {
+        new: true,
+    }).select(selectUser);
+
+    if (!user) {
+        throw new ApiError(400, 'User not found, please try again later');
+    }
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: 'User logged in successfully',
+        data: {
+            user,
+            token,
+        },
+    }));
+});
+
 module.exports = {
     sendEmailOtp,
     register,
+    login,
 };
