@@ -46,9 +46,35 @@ const loginValidation = Joi.object({
     }),
 });
 
+const resetPasswordValidation = Joi.object({
+    email: Joi.string().required().email().messages({
+        "string.empty": "Email is required",
+        "string.email": "Please provide a valid email address",
+        "any.required": "Email is required",
+    }),
+});
+
+const verifyResetPasswordValidation = Joi.object({
+    otp: Joi.string().required().messages({
+        "string.empty": "OTP is required",
+        "any.required": "OTP is required",
+        "string.length": "OTP must be 6 digits",
+    })
+});
+
+const createNewPasswordValidation = Joi.object({
+    password: Joi.string().required().messages({
+        "string.empty": "Password is required",
+        "any.required": "Password is required",
+    }),
+});
+
 module.exports = {
     sendEmailOtpValidation,
     registerValidation,
     loginValidation,
+    resetPasswordValidation,
+    verifyResetPasswordValidation,
+    createNewPasswordValidation,
 };
 

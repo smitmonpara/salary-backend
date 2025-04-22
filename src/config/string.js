@@ -11,11 +11,12 @@ const USER_ROLE = {
 
 const OTP_TYPE = {
     VERIFY_EMAIL: "Verify Email",
-    FORGOT_PASSWORD: "Forgot Password",
+    RESET_PASSWORD: "Reset Password",
 }
 
 const EMAIL_TEMPLATE_PATH = {
     SEND_OTP: "./views/send-otp.ejs",
+    RESET_PASSWORD: "./views/reset-password.ejs",
 }
 module.exports = {
     USER_LOGIN_TYPE,

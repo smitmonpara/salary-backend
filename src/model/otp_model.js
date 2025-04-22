@@ -16,7 +16,7 @@ const otpSchema = new Schema({
     },
     type: {
         type: String,
-        enum: [OTP_TYPE.VERIFY_EMAIL, OTP_TYPE.FORGOT_PASSWORD],
+        enum: [OTP_TYPE.VERIFY_EMAIL, OTP_TYPE.RESET_PASSWORD],
         required: true,
     },
 },
