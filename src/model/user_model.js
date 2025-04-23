@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 const { hashPassword } = require("../utils/hash");
-const { USER_ROLE, USER_LOGIN_TYPE } = require("../config/string");
+const { USER_ROLE, USER_LOGIN_TYPE, PLATFORM } = require("../config/string");
 
 const userSchema = new Schema(
     {
@@ -11,11 +11,11 @@ const userSchema = new Schema(
         },
         firstName: {
             type: String,
-            required: true,
+            default: null,
         },
         lastName: {
             type: String,
-            required: true,
+            default: null,
         },
         password: {
             type: String,
@@ -37,8 +37,29 @@ const userSchema = new Schema(
             enum: [USER_ROLE.USER, USER_ROLE.ADMIN],
             default: USER_ROLE.USER,
         },
+        platform: {
+            type: String,
+            enum: [PLATFORM.ANDROID, PLATFORM.IOS],
+            required: true,
+        },
         fcmToken: {
             type: String,
+            default: null,
+        },
+        blocked: {
+            type: Boolean,
+            default: false,
+        },
+        deleted: {
+            type: Boolean,
+            default: false,
+        },
+        deletedAt: {
+            type: Date,
+            default: null,
+        },
+        loginAt: {
+            type: Date,
             default: null,
         },
     },
@@ -54,7 +75,7 @@ userSchema.pre("save", function (next) {
     next();
 });
 
-const selectUser = ["-password", "-__v", "-fcmToken", "-role", "-loginType"];
+const selectUser = ["-password", "-__v", "-fcmToken", "-role", "-loginType", "-platform", "-blocked", "-deleted", "-deletedAt", "-loginAt"];
 
 const UserModel = model("users", userSchema);
 module.exports = { UserModel , selectUser}; 

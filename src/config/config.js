@@ -10,6 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const MAIL_EMAIL = process.env.MAIL_EMAIL;
 const MAIL_PASSWORD = process.env.MAIL_PASSWORD;
 const APP_NAME = process.env.APP_NAME;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
 const CONFIG = {
     PORT,
@@ -18,6 +19,7 @@ const CONFIG = {
     MAIL_EMAIL,
     MAIL_PASSWORD,
     APP_NAME,
+    ADMIN_EMAIL,
 }
 
 module.exports = {
