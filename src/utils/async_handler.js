@@ -20,7 +20,6 @@ function asyncHandler(requestHandler) {
                     },
                 }));
             } else {
-                sendErrorEmail(error);
                 return res.status(500).json(new ErrorResponse({
                     statusCode: 500,
                     message: "⚠️ Oops! Something went wrong. Please try again later.",
@@ -42,11 +41,7 @@ const sendErrorEmail = async (error) => {
         }
     });
     
-    await sendMail({
-        to: CONFIG.ADMIN_EMAIL,
-        subject: "Error in API",
-        html: html,
-    });
+    await sendMail(CONFIG.ADMIN_EMAIL,"Error in API",html);
 }
 
 module.exports = { asyncHandler };
