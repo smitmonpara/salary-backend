@@ -10,6 +10,7 @@ const { generateToken, verifyToken } = require('../utils/generate_token');
 const { SuccessResponse } = require('../utils/response');
 const ejs = require('ejs');
 const { comparePassword } = require('../utils/hash');
+const { deleteFile } = require('../middleware/upload');
 
 const sendEmailOtp = asyncHandler(async (req, res) => {
     const { email } = req.body;
@@ -137,7 +138,7 @@ const login = asyncHandler(async (req, res) => {
     const findUser = await UserModel.findOne({ email, role: USER_ROLE.USER });
     if (!findUser) {
         throw new ApiError(400, 'Email or password is incorrect');
-    }    
+    }
     if (findUser.loginType !== USER_LOGIN_TYPE.EMAIL) {
         throw new ApiError(400, 'Email login is not allowed for this user, please use social login');
     }
@@ -333,18 +334,18 @@ const socialLogin = asyncHandler(async (req, res) => {
     const findUser = await UserModel.findOne({ email, role: USER_ROLE.USER });
 
     if (findUser) {
-        if(findUser.blocked) {
+        if (findUser.blocked) {
             throw new ApiError(400, 'User is blocked, please contact admin');
         }
 
-        if(findUser.deleted) {
+        if (findUser.deleted) {
             throw new ApiError(400, 'User is deleted, please contact admin');
         }
 
         if (findUser.loginType !== socialType) {
             throw new ApiError(400, `${socialType} login is not allowed for this user`);
         }
-        
+
         const token = generateToken({
             id: findUser._id,
         });
@@ -360,11 +361,11 @@ const socialLogin = asyncHandler(async (req, res) => {
         }, {
             new: true,
         }).select(selectUser);
-        
+
         if (!updatedUser) {
             throw new ApiError(400, 'User not updated, please try again later');
         }
-        
+
         return res.status(200).json(new SuccessResponse({
             statusCode: 200,
             message: 'User logged in successfully',
@@ -428,6 +429,57 @@ const profile = asyncHandler(async (req, res) => {
     }));
 });
 
+const updateProfile = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { firstName, lastName } = req.body ?? {};
+    const image = req.file;
+
+    const findUser = await UserModel.findByIdAndUpdate(userId, {
+        firstName,
+        lastName,
+    }, {
+        new: true,
+    }).select(selectUser);
+
+    if (!findUser) {
+        throw new ApiError(400, 'User not found, please try again later');
+    }
+
+    if (image) {
+        deleteFile(findUser.image);
+        findUser.image = image.path;
+        const updatedUser = await findUser.save();
+        if (!updatedUser) {
+            throw new ApiError(400, 'User not updated, please try again later');
+        }
+    }
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: 'User profile updated successfully',
+        data: {
+            user: findUser,
+        },
+    }));
+});
+
+const logout = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const findUser = await UserModel.findByIdAndUpdate(userId, {
+        fcmToken: null,
+        platform: null,
+    }, {
+        new: true,
+    }).select(selectUser);
+    if (!findUser) {
+        throw new ApiError(400, 'User not found, please try again later');
+    }
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: 'User logged out successfully',
+    }));
+});
+
 module.exports = {
     sendEmailOtp,
     register,
@@ -437,4 +489,6 @@ module.exports = {
     createNewPassword,
     socialLogin,
     profile,
+    updateProfile,
+    logout,
 };
