@@ -2,3 +2,4 @@
 node_modules
 *.lock
 public/
+firebase-admin-sdk.json
