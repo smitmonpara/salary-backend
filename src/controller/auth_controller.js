@@ -313,6 +313,10 @@ const createNewPassword = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Register email not found, please register first');
     }
 
+    if(findUser.loginType !== USER_LOGIN_TYPE.EMAIL) {
+        throw new ApiError(400, `${findUser.loginType} login is not allowed for this user, please use social login`);
+    }
+
     const isMatch = comparePassword(password, findUser.password);
     if (isMatch) {
         throw new ApiError(400, 'New password should not be same as old password');
@@ -415,6 +419,50 @@ const socialLogin = asyncHandler(async (req, res) => {
     }));
 });
 
+const changePassword = asyncHandler(async (req, res) => { 
+    const userId = req.user._id;
+    const { password, newPassword } = req.body;
+
+    const findUser = await UserModel.findById(userId);
+
+    if (!findUser) {
+        throw new ApiError(400, 'User not found, please try again later');
+    }
+
+    if(findUser.loginType !== USER_LOGIN_TYPE.EMAIL) {
+        throw new ApiError(400, `You are not allowed to change password for ${findUser.loginType} login`);
+    }
+
+    let isMatch = comparePassword(password, findUser.password);
+    
+    if (!isMatch) {
+        throw new ApiError(400, 'Old password is incorrect');
+    }
+    
+    isMatch = comparePassword(newPassword, findUser.password);
+
+    if (isMatch) {
+        throw new ApiError(400, 'New password should not be same as old password');
+    }
+
+    if (password === newPassword) {
+        throw new ApiError(400, 'New password should not be same as old password');
+    }
+
+    findUser.password = newPassword;
+
+    const updatedUser = await findUser.save();
+
+    if (!updatedUser) {
+        throw new ApiError(400, 'Password not updated, please try again later');
+    }
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: 'Password changed successfully',
+    }));
+});
+
 const profile = asyncHandler(async (req, res) => {
     const userId = req.user._id;
 
@@ -488,6 +536,7 @@ module.exports = {
     verifyResetPasswordOtp,
     createNewPassword,
     socialLogin,
+    changePassword,
     profile,
     updateProfile,
     logout,

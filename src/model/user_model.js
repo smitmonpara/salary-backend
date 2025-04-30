@@ -75,7 +75,7 @@ userSchema.pre("save", function (next) {
     next();
 });
 
-const selectUser = ["-password", "-__v", "-fcmToken", "-role", "-loginType", "-platform", "-blocked", "-deleted", "-deletedAt", "-loginAt"];
+const selectUser = ["-password", "-__v", "-fcmToken", "-role", "-platform", "-blocked", "-deleted", "-deletedAt", "-loginAt"];
 
 const UserModel = model("users", userSchema);
 module.exports = { UserModel , selectUser}; 

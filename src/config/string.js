@@ -25,10 +25,17 @@ const EMAIL_TEMPLATE_PATH = {
     ERROR_EMAIL: "./views/error.ejs",
 }
 
+const TRANSACTION_TYPE = {
+    INCOME: "Income",
+    EXPENSE: "Expense",
+    TRANSFER: "Transfer",
+}
+
 module.exports = {
     USER_LOGIN_TYPE,
     PLATFORM,
     USER_ROLE,
     OTP_TYPE,
     EMAIL_TEMPLATE_PATH,
+    TRANSACTION_TYPE,
 };

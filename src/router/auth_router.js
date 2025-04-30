@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const { bodyValidation } = require("../middleware/validation");
-const { sendEmailOtpValidation, registerValidation, loginValidation, resetPasswordValidation, verifyResetPasswordValidation, createNewPasswordValidation, socialSignInValidation } = require("../validation/auth_validation");
-const { sendEmailOtp, register, login, resetPassword, verifyResetPasswordOtp, createNewPassword, profile, socialLogin, updateProfile, logout } = require("../controller/auth_controller");
+const { sendEmailOtpValidation, registerValidation, loginValidation, resetPasswordValidation, verifyResetPasswordValidation, createNewPasswordValidation, socialSignInValidation, changePasswordValidation } = require("../validation/auth_validation");
+const { sendEmailOtp, register, login, resetPassword, verifyResetPasswordOtp, createNewPassword, profile, socialLogin, updateProfile, logout, changePassword } = require("../controller/auth_controller");
 const { verifyUser } = require("../middleware/verify_user");
 const { USER_ROLE } = require("../config/string");
 const { imageUploader } = require("../middleware/upload");
@@ -15,6 +15,7 @@ router.post('/reset-password', bodyValidation(resetPasswordValidation), resetPas
 router.post('/verify-otp', bodyValidation(verifyResetPasswordValidation), verifyResetPasswordOtp);
 router.post('/create-new-password', bodyValidation(createNewPasswordValidation), createNewPassword);
 router.post('/social-login', bodyValidation(socialSignInValidation), socialLogin);
+router.post('/change-password', verifyUser([USER_ROLE.USER]), bodyValidation(changePasswordValidation), changePassword);
 router.get('/profile', verifyUser([USER_ROLE.USER]), profile);
 router.put('/profile', verifyUser([USER_ROLE.USER]), imageUploader.single("image"), updateProfile);
 router.post('/logout', verifyUser([USER_ROLE.USER]), logout);

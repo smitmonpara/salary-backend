@@ -55,7 +55,11 @@ categorySchema.post("findOneAndUpdate", async function (doc) {
     }
 });
 
-const selectCategory = [ "-deletedAt", "-deleted", "-__v"];
+const selectCategory = {
+    deletedAt: 0,
+    deleted: 0,
+    __v: 0,
+};
 
 
 const CategoryModel = model("categories", categorySchema);

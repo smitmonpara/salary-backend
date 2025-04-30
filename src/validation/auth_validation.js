@@ -103,6 +103,17 @@ const socialSignInValidation = Joi.object({
     }),
 });
 
+const changePasswordValidation = Joi.object({
+    password: Joi.string().required().messages({
+        "string.empty": "Password is required",
+        "any.required": "Password is required",
+    }),
+    newPassword: Joi.string().required().messages({
+        "string.empty": "New password is required",
+        "any.required": "New password is required",
+    }),
+});
+
 module.exports = {
     sendEmailOtpValidation,
     registerValidation,
@@ -111,5 +122,6 @@ module.exports = {
     verifyResetPasswordValidation,
     createNewPasswordValidation,
     socialSignInValidation,
+    changePasswordValidation,
 };
 
