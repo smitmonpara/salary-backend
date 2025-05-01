@@ -4,6 +4,7 @@ const { SuccessResponse } = require("../utils/response");
 const { selectCategory } = require("../model/category_model");
 const { ApiError } = require("../utils/api_error");
 const { TRANSACTION_TYPE } = require("../config/string");
+const { BalanceModel } = require("../model/balance_model");
 
 const addTransaction = asyncHandler(async (req, res) => {
     const { amount, type, note, category, date } = req.body;
@@ -41,49 +42,52 @@ const addTransaction = asyncHandler(async (req, res) => {
 
 const getTransaction = asyncHandler(async (req, res) => {
     const currentDate = new Date()
+    const userId = req.user._id;
+
     const month = req.query.month || currentDate.getMonth() + 1;
     const year = req.query.year || currentDate.getFullYear();
 
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
+    const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
+    const endDate = new Date(Date.UTC(year, month, 0, 0, 0, 0));
 
     const result = await TransactionModel.aggregate([
         {
             $match: {
-                date: { $gte: startDate, $lte: endDate }
+                date: { $gte: startDate, $lte: endDate },
+                createdBy: userId,
             }
         },
         {
             $facet: {
                 data: [
-                    { $sort: { date: 1 } }, 
-                    { 
+                    { $sort: { date: 1 } },
+                    {
                         $lookup: {
-                        from: "categories",
-                        localField: "category",
-                        foreignField: "_id", 
-                        as: "category",
-                        pipeline: [
-                            {
-                                $project: selectCategory
-                            }
-                        ]
+                            from: "categories",
+                            localField: "category",
+                            foreignField: "_id",
+                            as: "category",
+                            pipeline: [
+                                {
+                                    $project: selectCategory
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $unwind: {
+                            path: "$category",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },
+                    {
+                        $project: {
+                            deleted: 0,
+                            deletedAt: 0,
+                            __v: 0,
+                        }
                     }
-                },
-                {
-                    $unwind: {
-                        path: "$category",
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    $project: {
-                        deleted: 0,
-                        deletedAt: 0,
-                        __v: 0,
-                    }
-                }
-            ],
+                ],
                 incomeData: [
                     { $match: { type: TRANSACTION_TYPE.INCOME } },
                     { $group: { _id: null, total: { $sum: "$amount" } } },
@@ -105,10 +109,29 @@ const getTransaction = asyncHandler(async (req, res) => {
         }
     ]).exec();
 
+    if(!result || result.length === 0) {
+        throw new ApiError(400, "No transactions found for the specified month and year.");
+    }
+
+    const balance = await BalanceModel.findOne({
+        createdBy: userId,
+        month: month,
+        year: year,
+    });
+
+    const amount = balance ? balance.amount : 0;
+
     res.status(200).json(new SuccessResponse({
         statusCode: 200,
         message: "Transaction fetched successfully",
-        data: result[0],
+        data: {
+            transactions: result[0].data,
+            income: result[0].income,
+            expense: result[0].expense,
+            balance: amount,
+            avaliableBalance: amount + result[0].income - result[0].expense,
+            overExpense: amount + result[0].income - result[0].expense < 0 ? Math.abs(amount + result[0].income - result[0].expense) : 0,
+        }
     }));
 });
 
