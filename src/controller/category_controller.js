@@ -12,6 +12,7 @@ const createCategory = asyncHandler(async (req, res) => {
     const foundCategory = await CategoryModel.findOne({
         $and: [
             { name },
+            { deleted: false },
             {
                 $or: [
                     { createdBy: userId },
