@@ -128,6 +128,7 @@ const getTransaction = asyncHandler(async (req, res) => {
             transactions: result[0].data,
             income: result[0].income,
             expense: result[0].expense,
+            total: result[0].income - result[0].expense,
             balance: amount,
             avaliableBalance: amount + result[0].income - result[0].expense,
             overExpense: amount + result[0].income - result[0].expense < 0 ? Math.abs(amount + result[0].income - result[0].expense) : 0,
