@@ -56,6 +56,7 @@ const getTransaction = asyncHandler(async (req, res) => {
             $match: {
                 date: { $gte: startDate, $lte: endDate },
                 createdBy: userId,
+                deleted: false,
             }
         },
         {
@@ -110,7 +111,7 @@ const getTransaction = asyncHandler(async (req, res) => {
         }
     ]).exec();
 
-    if(!result || result.length === 0) {
+    if (!result || result.length === 0) {
         throw new ApiError(400, "No transactions found for the specified month and year.");
     }
 
@@ -136,6 +137,73 @@ const getTransaction = asyncHandler(async (req, res) => {
             currency: req.user.currency,
             symbol: req.user.symbol,
         }
+    }));
+});
+
+const updateTransaction = asyncHandler(async (req, res) => {
+    const transactionId = req.params.id;
+    const userId = req.user._id;
+
+    const { amount, type, note, category, date } = req.body;
+
+    const transactionData = {};
+    if (amount !== undefined) {
+        if (typeof amount !== "number" || isNaN(amount)) {
+            throw new ApiError(400, "Amount must be a number.");
+        }
+        transactionData.amount = amount;
+    }
+    if (type !== undefined) {
+        if (typeof type !== "string" || ![TRANSACTION_TYPE.INCOME, TRANSACTION_TYPE.EXPENSE, TRANSACTION_TYPE.TRANSFER].includes(type)) {
+            throw new ApiError(400, "Invalid type. Must be one of 'income', 'expense', or 'transfer'.");
+        }
+        transactionData.type = type;
+    }
+    if (note !== undefined) transactionData.note = note;
+    if (category !== undefined) transactionData.category = category;
+    if (date !== undefined) transactionData.date = date ? new Date(date) : null;
+
+    const transaction = await TransactionModel.findOneAndUpdate(
+        { _id: transactionId, createdBy: userId },
+        transactionData,
+        { new: true }
+    ).populate({
+        path: "category",
+        select: selectCategory,
+    }).select(selectTransaction);
+
+    if (!transaction) {
+        throw new ApiError(404, "Transaction not found or already deleted.");
+    }
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: "Transaction updated successfully",
+        data: transaction,
+    }));
+});
+
+const deleteTransaction = asyncHandler(async (req, res) => {
+    const transactionId = req.params.id;
+    const userId = req.user._id;
+
+    const transaction = await TransactionModel.findOneAndUpdate(
+        { _id: transactionId, createdBy: userId },
+        { deleted: true, deletedAt: new Date() },
+        { new: true }
+    ).populate({
+        path: "category",
+        select: selectCategory,
+    }).select(selectTransaction);
+
+    if (!transaction) {
+        throw new ApiError(404, "Transaction not found or already deleted.");
+    }
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: "Transaction deleted successfully",
+        data: transaction,
     }));
 });
 
@@ -176,6 +244,8 @@ const updateCurrency = asyncHandler(async (req, res) => {
 module.exports = {
     addTransaction,
     getTransaction,
+    updateTransaction,
+    deleteTransaction,
     getCurrency,
     updateCurrency,
 };
