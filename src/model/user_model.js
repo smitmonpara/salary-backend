@@ -37,6 +37,14 @@ const userSchema = new Schema(
             enum: [USER_ROLE.USER, USER_ROLE.ADMIN],
             default: USER_ROLE.USER,
         },
+        currency: {
+            type: String,
+            default: "USD",
+        },
+        symbol: {
+            type: String,
+            default: "$",
+        },
         platform: {
             type: String,
             enum: [PLATFORM.ANDROID, PLATFORM.IOS],

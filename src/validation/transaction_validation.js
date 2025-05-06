@@ -23,6 +23,20 @@ const createTransactionValidation = Joi.object({
     }),
 });
 
+const currencyValidation = Joi.object({
+    currency: Joi.string().required().messages({
+        "string.empty": "Currency is required",
+        "any.required": "Currency is required",
+    }),
+    symbol: Joi.string().required().messages({
+        "string.empty": "Symbol is required",
+        "any.required": "Symbol is required",
+    }),
+});
+
+
+
 module.exports = {
     createTransactionValidation,
+    currencyValidation,
 };

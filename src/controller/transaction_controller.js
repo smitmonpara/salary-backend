@@ -5,6 +5,7 @@ const { selectCategory } = require("../model/category_model");
 const { ApiError } = require("../utils/api_error");
 const { TRANSACTION_TYPE } = require("../config/string");
 const { BalanceModel } = require("../model/balance_model");
+const { UserModel } = require("../model/user_model");
 
 const addTransaction = asyncHandler(async (req, res) => {
     const { amount, type, note, category, date } = req.body;
@@ -132,6 +133,42 @@ const getTransaction = asyncHandler(async (req, res) => {
             balance: amount,
             avaliableBalance: amount + result[0].income - result[0].expense,
             overExpense: amount + result[0].income - result[0].expense < 0 ? Math.abs(amount + result[0].income - result[0].expense) : 0,
+            currency: req.user.currency,
+            symbol: req.user.symbol,
+        }
+    }));
+});
+
+const getCurrency = asyncHandler(async (req, res) => {
+    const currency = req.user.currency;
+    const symbol = req.user.symbol;
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: "Currency fetched successfully",
+        data: {
+            currency,
+            symbol,
+        }
+    }));
+});
+
+const updateCurrency = asyncHandler(async (req, res) => {
+    const { currency, symbol } = req.body;
+    const userId = req.user._id;
+
+    if (!currency || !symbol) {
+        return res.status(400).json({ message: "Currency and symbol are required." });
+    }
+
+    const user = await UserModel.findByIdAndUpdate(userId, { currency, symbol }, { new: true });
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: "Currency updated successfully",
+        data: {
+            currency: user.currency,
+            symbol: user.symbol,
         }
     }));
 });
@@ -139,4 +176,6 @@ const getTransaction = asyncHandler(async (req, res) => {
 module.exports = {
     addTransaction,
     getTransaction,
+    getCurrency,
+    updateCurrency,
 };
