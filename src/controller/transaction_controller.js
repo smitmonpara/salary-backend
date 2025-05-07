@@ -161,7 +161,7 @@ const updateTransaction = asyncHandler(async (req, res) => {
     }
     if (note !== undefined) transactionData.note = note;
     if (category !== undefined) transactionData.category = category;
-    if (date !== undefined) transactionData.date = date ? new Date(date) : null;
+    if (date !== undefined || date) transactionData.date = date ? new Date(date) : null;
 
     const transaction = await TransactionModel.findOneAndUpdate(
         { _id: transactionId, createdBy: userId },
