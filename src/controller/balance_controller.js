@@ -26,7 +26,7 @@ const createBalance = asyncHandler(async (req, res) => {
 
     return res.status(200).json({
         status: true,
-        message: "Balance created successfully",
+        message: "Balance saved successfully",
         data: balance,
     });
 });

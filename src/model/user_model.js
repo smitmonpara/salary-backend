@@ -48,7 +48,6 @@ const userSchema = new Schema(
         platform: {
             type: String,
             enum: [PLATFORM.ANDROID, PLATFORM.IOS],
-            required: true,
         },
         fcmToken: {
             type: String,

@@ -6,6 +6,7 @@ const { ApiError } = require("../utils/api_error");
 const { TRANSACTION_TYPE } = require("../config/string");
 const { BalanceModel } = require("../model/balance_model");
 const { UserModel } = require("../model/user_model");
+const { CurrencyModel } = require("../model/currency_model");
 
 const addTransaction = asyncHandler(async (req, res) => {
     const { amount, type, note, category, date } = req.body;
@@ -207,19 +208,54 @@ const deleteTransaction = asyncHandler(async (req, res) => {
     }));
 });
 
+const addCurrency = asyncHandler(async (req, res) => {
+    const { currency, symbol } = req.body;
+
+    if (!currency || !symbol) {
+        throw new ApiError(400, "Currency and symbol are required.");
+    }
+
+    const checkCurrency = await CurrencyModel.findOne({
+        $or: [
+            { currency: currency },
+            { symbol: symbol }
+        ]
+    });
+
+    if (checkCurrency) {
+        throw new ApiError(400, "Currency or symbol already exists.");
+    }
+
+    const createCurrency = await CurrencyModel.create({ currency, symbol });
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: "Currency added successfully",
+        data: createCurrency
+    }));
+});
+
 const getCurrency = asyncHandler(async (req, res) => {
-    const currency = req.user.currency;
-    const symbol = req.user.symbol;
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: "User currency fetched successfully",
+        data: {
+            currency: req.user.currency,
+            symbol: req.user.symbol,
+        }
+    }));
+});
+
+const getCurrencies = asyncHandler(async (req, res) => {
+    const currencies = await CurrencyModel.find();
 
     res.status(200).json(new SuccessResponse({
         statusCode: 200,
         message: "Currency fetched successfully",
-        data: {
-            currency,
-            symbol,
-        }
+        data: currencies
     }));
 });
+
 
 const updateCurrency = asyncHandler(async (req, res) => {
     const { currency, symbol } = req.body;
@@ -246,6 +282,8 @@ module.exports = {
     getTransaction,
     updateTransaction,
     deleteTransaction,
+    addCurrency,
     getCurrency,
+    getCurrencies,
     updateCurrency,
 };
