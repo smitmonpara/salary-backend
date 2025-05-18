@@ -141,6 +141,142 @@ const getTransaction = asyncHandler(async (req, res) => {
     }));
 });
 
+const getTypeTransaction = asyncHandler(async (req, res) => {
+    const currentDate = new Date()
+    const userId = req.user._id;
+
+    let startDate, endDate;
+    
+    if (req.query.startDate && req.query.endDate) {
+        startDate = new Date(req.query.startDate);
+        endDate = new Date(req.query.endDate);
+
+        endDate.setDate(endDate.getDate() + 1);
+        endDate.setHours(0, 0, 0, 0);        
+    } else {
+        const type = req.query.type || "month";
+
+        switch (type) {
+            case "today":
+                startDate = new Date(currentDate.setHours(0, 0, 0, 0));
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 1);
+                break;
+
+            case "yesterday":
+                const yesterday = new Date(currentDate);
+                yesterday.setDate(yesterday.getDate() - 1);
+                startDate = new Date(yesterday.setHours(0, 0, 0, 0));
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 1);
+                break;
+
+            case "week":
+                const firstDayOfWeek = new Date(currentDate);
+                const day = firstDayOfWeek.getDay();
+                const diff = currentDate.getDate() - day + (day === 0 ? -6 : 1);
+                firstDayOfWeek.setDate(diff);
+                startDate = new Date(firstDayOfWeek.setHours(0, 0, 0, 0));
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 7);
+                break;
+
+            case "year":
+                const year = currentDate.getFullYear();
+                startDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
+                endDate = new Date(Date.UTC(year + 1, 0, 1, 0, 0, 0));
+                break;
+
+            case "month":
+            default:
+                const month = req.query.month ? parseInt(req.query.month) : currentDate.getMonth() + 1;
+                const selectedYear = req.query.year ? parseInt(req.query.year) : currentDate.getFullYear();
+
+                startDate = new Date(Date.UTC(selectedYear, month - 1, 1, 0, 0, 0));
+                endDate = new Date(Date.UTC(selectedYear, month, 1, 0, 0, 0));
+                break;
+        }
+    }
+
+
+    const result = await TransactionModel.aggregate([
+        {
+            $match: {
+                date: { $gte: startDate, $lt: endDate },
+                createdBy: userId,
+                deleted: false,
+            }
+        },
+        {
+            $facet: {
+                data: [
+                    { $sort: { date: 1 } },
+                    {
+                        $lookup: {
+                            from: "categories",
+                            localField: "category",
+                            foreignField: "_id",
+                            as: "category",
+                            pipeline: [
+                                {
+                                    $project: selectCategory
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $unwind: {
+                            path: "$category",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },
+                    {
+                        $project: {
+                            deleted: 0,
+                            deletedAt: 0,
+                            __v: 0,
+                        }
+                    }
+                ],
+                incomeData: [
+                    { $match: { type: TRANSACTION_TYPE.INCOME } },
+                    { $group: { _id: null, total: { $sum: "$amount" } } },
+                    { $project: { _id: 0, total: 1 } }
+                ],
+                expenseData: [
+                    { $match: { type: TRANSACTION_TYPE.EXPENSE } },
+                    { $group: { _id: null, total: { $sum: "$amount" } } },
+                    { $project: { _id: 0, total: 1 } }
+                ]
+            }
+        },
+        {
+            $project: {
+                data: 1,
+                income: { $ifNull: [{ $arrayElemAt: ["$incomeData.total", 0] }, 0] },
+                expense: { $ifNull: [{ $arrayElemAt: ["$expenseData.total", 0] }, 0] }
+            }
+        }
+    ]).exec();
+
+    if (!result || result.length === 0) {
+        throw new ApiError(400, "No transactions found for the specified month and year.");
+    }
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: "Transaction fetched successfully",
+        data: {
+            transactions: result[0].data,
+            income: result[0].income,
+            expense: result[0].expense,
+            total: result[0].income - result[0].expense,
+            currency: req.user.currency,
+            symbol: req.user.symbol,
+        }
+    }));
+});
+
 const updateTransaction = asyncHandler(async (req, res) => {
     const transactionId = req.params.id;
     const userId = req.user._id;
@@ -280,6 +416,7 @@ const updateCurrency = asyncHandler(async (req, res) => {
 module.exports = {
     addTransaction,
     getTransaction,
+    getTypeTransaction,
     updateTransaction,
     deleteTransaction,
     addCurrency,
