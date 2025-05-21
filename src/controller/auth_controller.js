@@ -11,6 +11,7 @@ const { SuccessResponse } = require('../utils/response');
 const ejs = require('ejs');
 const { comparePassword } = require('../utils/hash');
 const { deleteFile } = require('../middleware/upload');
+const { FeedbackModel } = require('../model/feedback_model');
 
 const sendEmailOtp = asyncHandler(async (req, res) => {
     const { email } = req.body;
@@ -313,7 +314,7 @@ const createNewPassword = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Register email not found, please register first');
     }
 
-    if(findUser.loginType !== USER_LOGIN_TYPE.EMAIL) {
+    if (findUser.loginType !== USER_LOGIN_TYPE.EMAIL) {
         throw new ApiError(400, `${findUser.loginType} login is not allowed for this user, please use social login`);
     }
 
@@ -419,7 +420,7 @@ const socialLogin = asyncHandler(async (req, res) => {
     }));
 });
 
-const changePassword = asyncHandler(async (req, res) => { 
+const changePassword = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const { password, newPassword } = req.body;
 
@@ -429,16 +430,16 @@ const changePassword = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'User not found, please try again later');
     }
 
-    if(findUser.loginType !== USER_LOGIN_TYPE.EMAIL) {
+    if (findUser.loginType !== USER_LOGIN_TYPE.EMAIL) {
         throw new ApiError(400, `You are not allowed to change password for ${findUser.loginType} login`);
     }
 
     let isMatch = comparePassword(password, findUser.password);
-    
+
     if (!isMatch) {
         throw new ApiError(400, 'Old password is incorrect');
     }
-    
+
     isMatch = comparePassword(newPassword, findUser.password);
 
     if (isMatch) {
@@ -528,6 +529,27 @@ const logout = asyncHandler(async (req, res) => {
     }));
 });
 
+const feedback = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { subject, description } = req.body;
+
+    const feedback = await FeedbackModel.create({
+        subject,
+        description,
+        createdBy: userId,
+    });
+
+    if (!feedback) {
+        throw new ApiError(400, 'Feedback not created, please try again later');
+    }
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: 'Thank you for your feedback',
+        data: feedback,
+    }));
+});
+
 module.exports = {
     sendEmailOtp,
     register,
@@ -540,4 +562,5 @@ module.exports = {
     profile,
     updateProfile,
     logout,
+    feedback,
 };

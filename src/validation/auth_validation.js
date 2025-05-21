@@ -114,6 +114,11 @@ const changePasswordValidation = Joi.object({
     }),
 });
 
+const feedbackValidation = Joi.object({
+    subject: Joi.string().optional().allow("", null),
+    description: Joi.string().optional().allow("", null),
+});
+
 module.exports = {
     sendEmailOtpValidation,
     registerValidation,
@@ -123,5 +128,6 @@ module.exports = {
     createNewPasswordValidation,
     socialSignInValidation,
     changePasswordValidation,
+    feedbackValidation,
 };
 
