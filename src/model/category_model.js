@@ -1,6 +1,7 @@
 const { Schema, model } = require("mongoose");
 const { selectUser } = require("./user_model");
 const { deleteFile } = require("../middleware/upload");
+const { CATEGORY_TYPE } = require("../config/string");
 
 const categorySchema = new Schema(
     {
@@ -15,6 +16,11 @@ const categorySchema = new Schema(
         description: {
             type: String,
             default: null,
+        },
+        type: {
+            type: String,
+            enum: [CATEGORY_TYPE.INCOME, CATEGORY_TYPE.EXPENSE, CATEGORY_TYPE.BOTH],
+            required: true,
         },
         createdBy: {
             type: Schema.Types.ObjectId,

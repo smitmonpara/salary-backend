@@ -6,12 +6,12 @@ const { ApiError } = require("../utils/api_error");
 
 const createCategory = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    const { name } = req.body;
+    const { name, type } = req.body;
     const icon = req.file;
 
     const foundCategory = await CategoryModel.findOne({
         $and: [
-            { name },
+            { name, type },
             { deleted: false },
             {
                 $or: [
@@ -29,6 +29,7 @@ const createCategory = asyncHandler(async (req, res) => {
 
     let category = await CategoryModel.create({
         name,
+        type,
         icon: icon?.path,
         createdBy: userId,
     });
@@ -90,7 +91,7 @@ const getCategory = asyncHandler(async (req, res) => {
 const updateCategory = asyncHandler(async (req, res) => {
     const id = req.params.id;
     const userId = req.user._id;
-    const { name } = req.body;
+    const { name, type } = req.body;
     const icon = req.file;
 
     const foundCategory = await CategoryModel.findOne({
@@ -118,6 +119,7 @@ const updateCategory = asyncHandler(async (req, res) => {
         createdBy: userId,
     }, {
         name,
+        type,
         icon: icon?.path,
     }, {
         new: true,

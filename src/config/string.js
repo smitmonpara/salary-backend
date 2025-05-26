@@ -31,6 +31,12 @@ const TRANSACTION_TYPE = {
     TRANSFER: "Transfer",
 }
 
+const CATEGORY_TYPE = {
+    INCOME: "Income",
+    EXPENSE: "Expense",
+    BOTH: "Both",
+}
+
 module.exports = {
     USER_LOGIN_TYPE,
     PLATFORM,
@@ -38,4 +44,5 @@ module.exports = {
     OTP_TYPE,
     EMAIL_TEMPLATE_PATH,
     TRANSACTION_TYPE,
+    CATEGORY_TYPE,
 };
