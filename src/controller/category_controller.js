@@ -69,6 +69,22 @@ const getAllCategories = asyncHandler(async (req, res) => {
     }));
 });
 
+const getAllUserCategories = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const categories = await CategoryModel.find({
+        $and: [
+            { deleted: false },
+            { createdBy: userId },
+        ]
+    }).select(selectCategory);
+
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: "User categories fetched successfully",
+        data: categories
+    }));
+});
+
 const getCategory = asyncHandler(async (req, res) => {
     const id = req.params.id;
 
@@ -168,6 +184,7 @@ const deleteCategory = asyncHandler(async (req, res) => {
 module.exports = {
     createCategory,
     getAllCategories,
+    getAllUserCategories,
     getCategory,
     updateCategory,
     deleteCategory,
