@@ -2,7 +2,7 @@ const Joi = require("joi");
 const { TRANSACTION_TYPE } = require("../config/string");
 
 const createTransactionValidation = Joi.object({
-    note: Joi.string().optional(),
+    note: Joi.string().optional().allow("", null),
     amount: Joi.number().required().messages({
         "number.base": "Amount must be a number",
         "any.required": "Amount is required",
