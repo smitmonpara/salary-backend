@@ -213,7 +213,7 @@ const resetPassword = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Email not sent, please try again later');
     }
 
-    const html = await ejs.renderFile(EMAIL_TEMPLATE_PATH.SEND_OTP, {
+    const html = await ejs.renderFile(EMAIL_TEMPLATE_PATH.RESET_PASSWORD, {
         otp,
         email,
         app: CONFIG.APP_NAME,
