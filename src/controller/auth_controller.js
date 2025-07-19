@@ -24,7 +24,7 @@ const sendEmailOtp = asyncHandler(async (req, res) => {
     const otpModel = await OtpModel.create({
         email,
         otp,
-        expiredAt: new Date(Date.now() + (5 * 60 * 1000)),
+        expiredAt: new Date(Date.now() + (90 * 1000)),
         type: OTP_TYPE.VERIFY_EMAIL,
     });
 
@@ -50,7 +50,7 @@ const sendEmailOtp = asyncHandler(async (req, res) => {
 
     setTimeout(async () => {
         await OtpModel.findByIdAndDelete(otpModel._id);
-    }, 5 * 60 * 1000);
+    }, 90 * 1000);
 
     res.status(200).json(new SuccessResponse({
         statusCode: 200,
@@ -196,7 +196,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     const otpModel = await OtpModel.create({
         email,
         otp,
-        expiredAt: new Date(Date.now() + (5 * 60 * 1000)),
+        expiredAt: new Date(Date.now() + (90 * 1000)),
         type: OTP_TYPE.RESET_PASSWORD,
     });
 
@@ -227,7 +227,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
     setTimeout(async () => {
         await OtpModel.findByIdAndDelete(otpModel._id);
-    }, 5 * 60 * 1000);
+    }, 90 * 1000);
 
     res.status(200).json(new SuccessResponse({
         statusCode: 200,
