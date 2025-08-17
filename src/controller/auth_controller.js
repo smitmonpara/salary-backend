@@ -529,6 +529,24 @@ const logout = asyncHandler(async (req, res) => {
     }));
 });
 
+const deleteAccount = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const findUser = await UserModel.findByIdAndUpdate(userId, {
+        fcmToken: null,
+        platform: null,
+        deleted: true,
+    }, {
+        new: true,
+    }).select(selectUser);
+    if (!findUser) {
+        throw new ApiError(400, 'User not found, please try again later');
+    }
+    res.status(200).json(new SuccessResponse({
+        statusCode: 200,
+        message: 'Your Account has been deleted successfully',
+    }));
+});
+
 const feedback = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const { subject, description } = req.body;
@@ -562,5 +580,6 @@ module.exports = {
     profile,
     updateProfile,
     logout,
+    deleteAccount,
     feedback,
 };
