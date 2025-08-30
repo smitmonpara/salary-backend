@@ -2,8 +2,9 @@ const { Schema, model } = require('mongoose');
 
 const balanceSchema = new Schema({
     createdBy: {
-        type: String,
-        required: true,
+        type: Schema.Types.ObjectId,
+        ref: "users",
+        required: true
     },
     month: {
         type: Number,
