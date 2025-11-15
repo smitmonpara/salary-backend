@@ -3,13 +3,13 @@ const { TransactionModel, selectTransaction } = require("../model/transaction_mo
 const { SuccessResponse } = require("../utils/response");
 const { selectCategory } = require("../model/category_model");
 const { ApiError } = require("../utils/api_error");
-const { TRANSACTION_TYPE } = require("../config/string");
+const { TRANSACTION_TYPE, PAYMENT_TYPE } = require("../config/string");
 const { BalanceModel } = require("../model/balance_model");
 const { UserModel } = require("../model/user_model");
 const { CurrencyModel } = require("../model/currency_model");
 
 const addTransaction = asyncHandler(async (req, res) => {
-    const { amount, type, note, category, date } = req.body;
+    const { amount, type, note, category, date, paymentMethod } = req.body;
     const userId = req.user._id;
 
     if (!amount || !type || !category) {
@@ -23,6 +23,7 @@ const addTransaction = asyncHandler(async (req, res) => {
         category,
         date: date ? new Date(date) : new Date(),
         createdBy: userId,
+        paymentMethod: paymentMethod || null,
     };
 
     let transaction = await TransactionModel.create(transactionData);
@@ -281,7 +282,7 @@ const updateTransaction = asyncHandler(async (req, res) => {
     const transactionId = req.params.id;
     const userId = req.user._id;
 
-    const { amount, type, note, category, date } = req.body;
+    const { amount, type, note, category, date, paymentMethod } = req.body;
 
     const transactionData = {};
     if (amount !== undefined) {
@@ -291,7 +292,7 @@ const updateTransaction = asyncHandler(async (req, res) => {
         transactionData.amount = amount;
     }
     if (type !== undefined) {
-        if (typeof type !== "string" || ![TRANSACTION_TYPE.INCOME, TRANSACTION_TYPE.EXPENSE, TRANSACTION_TYPE.TRANSFER].includes(type)) {
+        if (typeof type !== "string" || ![Object.values(TRANSACTION_TYPE)].includes(type)) {
             throw new ApiError(400, "Invalid type. Must be one of 'income', 'expense', or 'transfer'.");
         }
         transactionData.type = type;
@@ -299,6 +300,12 @@ const updateTransaction = asyncHandler(async (req, res) => {
     if (note !== undefined) transactionData.note = note;
     if (category !== undefined) transactionData.category = category;
     if (date !== undefined || date) transactionData.date = date ? new Date(date) : null;
+    if (paymentMethod !== undefined) {
+        if (typeof paymentMethod !== "string" || ![Object.values(PAYMENT_TYPE)].includes(paymentMethod)) {
+            throw new ApiError(400, `Payment Method must be one of the following: ${Object.values(PAYMENT_TYPE).join(", ")}`);
+        }
+        transactionData.paymentMethod = paymentMethod;
+    }
 
     const transaction = await TransactionModel.findOneAndUpdate(
         { _id: transactionId, createdBy: userId },

@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { TRANSACTION_TYPE } = require("../config/string");
+const { TRANSACTION_TYPE, PAYMENT_TYPE } = require("../config/string");
 
 const createTransactionValidation = Joi.object({
     note: Joi.string().optional().allow("", null),
@@ -21,6 +21,13 @@ const createTransactionValidation = Joi.object({
     date: Joi.date().optional().messages({
         "date.base": "Date must be a valid date",
     }),
+    paymentMethod: Joi
+        .string()
+        .valid(PAYMENT_TYPE.CASH, PAYMENT_TYPE.CARD, PAYMENT_TYPE.UPI, PAYMENT_TYPE.NET_BANKING)
+        .optional()
+        .messages({
+            "any.only": `Payment Method must be one of the following: ${Object.values(PAYMENT_TYPE).join(", ")}`,
+        }),
 });
 
 const currencyValidation = Joi.object({

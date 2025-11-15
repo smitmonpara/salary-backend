@@ -37,6 +37,13 @@ const CATEGORY_TYPE = {
     BOTH: "Both",
 }
 
+const PAYMENT_TYPE = {
+    CASH: "Cash",
+    CARD: "Card",
+    UPI: "UPI",
+    NET_BANKING: "Net Banking",
+}
+
 module.exports = {
     USER_LOGIN_TYPE,
     PLATFORM,
@@ -45,4 +52,5 @@ module.exports = {
     EMAIL_TEMPLATE_PATH,
     TRANSACTION_TYPE,
     CATEGORY_TYPE,
+    PAYMENT_TYPE,
 };

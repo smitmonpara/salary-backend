@@ -1,5 +1,5 @@
 const { Schema, model } = require("mongoose");
-const { TRANSACTION_TYPE } = require("../config/string");
+const { TRANSACTION_TYPE, PAYMENT_TYPE } = require("../config/string");
 
 const transactionSchema = new Schema(
     {
@@ -23,6 +23,10 @@ const transactionSchema = new Schema(
         date: {
             type: Date,
             default: Date.now,
+        },
+        paymentMethod: {
+            type: String,
+            enum: [PAYMENT_TYPE.CASH, PAYMENT_TYPE.CARD, PAYMENT_TYPE.UPI, PAYMENT_TYPE.NET_BANKING],
         },
         createdBy: {
             type: Schema.Types.ObjectId,
