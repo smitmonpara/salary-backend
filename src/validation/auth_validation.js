@@ -14,10 +14,7 @@ const registerValidation = Joi.object({
         "string.empty": "First name is required",
         "any.required": "First name is required",
     }),
-    lastName: Joi.string().required().messages({
-        "string.empty": "Last name is required",
-        "any.required": "Last name is required",
-    }),
+    lastName: Joi.string().optional(),
     password: Joi.string().required().messages({
         "string.empty": "Password is required",
         "any.required": "Password is required",
